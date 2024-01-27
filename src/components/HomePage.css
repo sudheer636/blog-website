@@ -1,0 +1,25 @@
+.post-div{
+  /* background-color: bisque; */
+  border-color: whitesmoke;
+  margin: 1%;
+  text-align: center;
+}
+
+.post-del-btn{
+  background-color: aqua;
+  border-radius: 10%;
+}
+
+.edit-dialog{
+  background-color: white;
+  backdrop-filter: blur(5px);
+}
+
+/* .msg-div {
+  background-color: blue;
+} */
+
+.individual-post-div {
+  /* background-color: black; */
+  border: solid black 1px;
+}

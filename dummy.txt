@@ -1,0 +1,15 @@
+               {/* {this.state.backgroundColor && (
+                  <dialog open={this.state.postDialog} className="edit-dialog">
+                    <input
+                      value={this.state.newPost}
+                      onChange={this.editMessage}
+                    ></input>
+                    <button onClick={() => this.onClickEdit(item._id)}>
+                      Save
+                    </button>
+                    <button onClick={() => this.onCloseDialog()}>
+                      {" "}
+                      close{" "}
+                    </button>
+                  </dialog>
+                )} */}
