@@ -14,7 +14,7 @@ import RegisterPage from "./components/RegisterPage";
 import HomePage from "./components/HomePage";
 import MyPosts from "./components/MyPosts";
 import ProfilePage from "./components/Profile";
-// import PostModal from "./components/PostModal"
+import ErrorPage from "./components/ErrorPage";
 import { createBrowserHistory } from "history";
 export const history = createBrowserHistory();
 
@@ -22,49 +22,51 @@ function App() {
   return (
     <Provider store={store}>
       <HistoryRouter history={history}>
-        <div>
           <div className="nav-div">
-          <nav className="navbar">
-            <ul className="nav-list">
-              <li>
-                <NavLink to="/home" activeClassName="active-link">
-                  Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/myposts" activeClassName="active-link">
-                  My posts
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/login" activeClassName="active-link">
-                  Login
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/register" activeClassName="active-link">
-                  Register
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/myprofile" activeClassName="active-link">
-                  My Profile
-                </NavLink>
-              </li>
-            </ul>
-          </nav>
+            <nav className="navbar">
+              <ul className="nav-list">
+                <li>
+                  <NavLink to="/home" activeClassName="active-link" className="nav-link">
+                    Home
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/myposts" activeClassName="active-link" className="nav-link">
+                    My posts
+                  </NavLink>
+                </li>
+                { "" ? (
+                  <>
+                    <li>
+                      <NavLink to="/auth/login" activeClassName="active-link" className="nav-link">
+                        Login
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/auth/register" activeClassName="active-link" className="nav-link">
+                        Register
+                      </NavLink>
+                    </li>
+                  </>
+                ) : null}
+                <li>
+                  <NavLink to="/myprofile" activeClassName="active-link" className="nav-link">
+                    My Profile
+                  </NavLink>
+                </li>
+              </ul>
+            </nav>
           </div>
           <div className="body-div">
-          <Routes>
-            <Route path="/" element={<Navigate replace to="/login" />} />
-            <Route path="/register" element={<RegisterPage />}></Route>
-            <Route path="/login" element={<LoginPage />}></Route>
-            <Route path="/home" element={<HomePage />}></Route>
-            <Route path="/myposts" element={<MyPosts />}></Route>
-            <Route path="/myprofile" element={<ProfilePage />}></Route>
-            {/* <Route path="/postmodal" element={<PostModal />}></Route> */}
-          </Routes>
-          </div>
+            <Routes>
+              <Route path="/" element={<Navigate replace to="/auth/login" />} />
+              <Route path="/auth/register" element={<RegisterPage />} />
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/myposts" element={<MyPosts />} />
+              <Route path="/myprofile" element={<ProfilePage />} />
+              <Route path="/timeout" element={<ErrorPage />} />
+            </Routes>
         </div>
       </HistoryRouter>
     </Provider>

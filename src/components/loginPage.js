@@ -1,79 +1,83 @@
-import React, { useState } from "react";
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import axios from "axios";
 import { history } from "../App";
-import { setUserName } from "../redux/action";
-
-// import { createBrowserHistory } from "history";
-// import fetch from 'node-fetch'
-// const fetch = require('node-fetch');
+import './loginPage.css';
+import { setUserName, setToken } from "../redux/action";
 
 function LoginPage() {
-  const [userInputUsername, setuserInputUsername] = useState("");
-  const [userInputPassword, setuserInputPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  // const history = createBrowserHistory();
+  const baseUrl = process.env.REACT_APP_HostUrl;
 
-  const handleclickUsername = async (event) => {
-    setuserInputUsername(event.target.value);
+  useEffect(() => {
+    localStorage.setItem("token", null);
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+  }, []);
+
+  const handleInputChange = (event, setState) => {
+    setState(event.target.value);
   };
-  const handleclickPassword = async (event) => {
-    setuserInputPassword(event.target.value);
+
+  const redirectToRegisterPage = () => {
+    history.push("/auth/register");
   };
-  const handleclick = async (e) => {
-    e.preventDefault();
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
     try {
       const data = {
-        Username: userInputUsername,
-        Password: userInputPassword,
+        Username: username,
+        Password: password,
       };
-      console.log('data----', data);
-      const response = await axios.post("http://localhost:3001/login", data);
-      console.log("response------", response);
+
+      const response = await axios.post(`${baseUrl}/auth/login`, data);
+
       if (response.status === 200) {
-        // setIsAuthenticated(true);
-        dispatch(setUserName(userInputUsername));
-        history.push('/home');
-        console.log("succesfull login");
+        const { data: responseData } = response;
+        const token = responseData.token;
+        dispatch(setUserName(username));
+        dispatch(setToken(token));
+        localStorage.setItem("Username", username);
+        localStorage.setItem("token", token);
+        document.cookie = `token=${token}; path=/;`;
+        history.push("/home");
       } else {
-        alert('invalid credentials')
+        alert("Invalid credentials");
       }
     } catch (err) {
-      console.log("error----", err);
+      console.log("Error:", err);
     }
   };
 
   return (
-    <div className="App">
-      <h1> Login </h1>
-      <form>
+    <div className="login-container">
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
         <label>Username:</label>
         <input
-          id="userinput"
           type="text"
-          value={userInputUsername}
-          onChange={handleclickUsername}
+          value={username}
+          onChange={(e) => handleInputChange(e, setUsername)}
           required
-        ></input>
-        <br></br>
-        <br></br>
+        />
+        <br />
+        <br />
         <label>Password:</label>
         <input
-          id="userinputPassword"
           type="password"
-          value={userInputPassword}
-          onChange={handleclickPassword}
+          value={password}
+          onChange={(e) => handleInputChange(e, setPassword)}
           required
-        ></input>
-        <br></br>
-        <br></br>
-        <button onClick={(e) => handleclick(e)} type="submit">
-          Login
-        </button>
+        />
+        <br />
+        <br />
+        <button type="submit">Login</button>
       </form>
-      <br></br>
-      {/* <button onClick={() => props.onSwitch("register")}> */}
-      <button>Don't have account.? Sign Up</button>
+      <br />
+      <button onClick={redirectToRegisterPage}>Don't have an account? Sign Up</button>
     </div>
   );
 }

@@ -1,21 +1,53 @@
 
-.homepage-container {
+.mypage-container {
   /* max-width: 800px; */
   margin: 35px auto 0;
-  /* padding: 20px; */
-  padding: 1rem;
+  padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #f9f9f9;
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
 }
 
+/* Search bar styles */
 .search-input {
   margin-bottom: 20px; 
   display: flex;
   align-items: center; 
+  display: flex;
+  justify-content: center;
+}
+
+#searchInput {
+  width: 200px; 
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+  margin-right: 10px;
+}
+
+.mypage-container button {
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.mypage-container button:hover {
+  background-color: #555;
+}
+
+.post-div {
+  /* background-color: bisque; */
+  border-color: whitesmoke;
+}
+
+.individual-post-div {
+  /* background-color: black; */
+  border: solid black 1px;
+  padding-top: 1rem;
 }
 
 .filter-dropdown {
@@ -34,52 +66,15 @@
   margin-top: 50px;
 }
 
-#searchInput {
-  width: 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  box-sizing: border-box;
-  margin-right: 10px; 
-}
-
-.homepage-container button {
-  padding: 10px 20px;
-  background-color: #333;
-  color: #fff;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.homepage-container button:hover {
-  background-color: #555;
-}
-
-/* Post styles */
-.post-div {
-  border-color: whitesmoke;
-  text-align: center;
-  min-width: 100%;
-}
-
-.individual-post-div {
-  border: solid black 1px;
-  border-radius: 10px;
-  padding: 1rem;
-  margin: 1rem;
-  cursor: pointer;
-  max-width: 100%;
-}
-
 .msg-div {
   border: 1px solid #ddd;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 8px;
   background-color: #f9f9f9;
-  text-align: left; 
+  text-align:justify; 
 }
+
 
 .post-del-btn {
   background-color: aqua;
@@ -87,21 +82,21 @@
   margin-left: 10px;
 }
 
+/* Edit dialog styles */
 .edit-dialog {
-  max-width: 400px; 
-  margin-top: 20px; 
+  max-width: 800px; 
+  margin: 20px auto; 
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: #f9f9f9;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+  background-color: #f9f9f9; 
   display: flex; 
-  flex-direction: column; 
-  align-items: center; 
+  flex-direction: column;
+  align-items: center;
 }
 
 .edit-dialog input[type="text"] {
-  width: 100%; 
+  width: 100%;
   margin-bottom: 10px; 
   padding: 10px;
   border: 1px solid #ccc;
@@ -111,7 +106,7 @@
 
 .edit-dialog button {
   padding: 10px 20px;
-  background-color: #333;
+  /* background-color: #333; */
   color: #fff;
   border: none;
   border-radius: 3px;
@@ -119,34 +114,18 @@
   margin-top: 10px;
 }
 
-.edit-dialog button:hover {
-  background-color: #555;
-}
-
-.user-image-placeholder {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%; 
-  background-color: rgb(96, 138, 231);
-  margin-right: 10px; 
-  display: inline-block; 
-}
-
-.individual-post-username {
-  display: flex; 
-  align-items: center; 
-  margin: 1rem;
-
-}
 
 .created-date {
-  text-align:center;
-  margin-left: auto;
+  text-align: right;
+  /* position: absolute;
+  bottom: 0;
+  right: 0; */
 }
 
 .add-post-container {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .add-post-container input {
@@ -159,4 +138,10 @@
   border: none;
   padding: 8px 16px;
   cursor: pointer;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

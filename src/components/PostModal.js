@@ -1,86 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { v4 } from "uuid";
-import { storage } from "../firebase-config"; // Adjust the path accordingly
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
 import "./PostModal.css";
 
-const PostModal = ({ closeModal, username }) => {
+const PostModal = ({
+  closeModal,
+  username,
+  editMode,
+  postDetails,
+  viewMode,
+}) => {
   const [userMessage, setUserMessage] = useState("");
-  const [image, setImage] = useState(null);
+  const [userPost, setUserPost] = useState(null);
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const modalRef = useRef(null);
+  const baseUrl = process.env.REACT_APP_HostUrl;
 
-  const handlePostClick = (event) => {
+  useEffect(() => {
+    setUserPost(postDetails);
+    setUserMessage(postDetails ? postDetails.PostMessage : "");
+  }, [postDetails]);
+
+  useEffect(() => {
+    setIsCurrentUser(username === (postDetails && postDetails.Username));
+  }, [username, postDetails]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        closeModal();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [closeModal]);
+
+  const handlePostMessageChange = (event) => {
     setUserMessage(event.target.value);
   };
 
-  const handleFileChange = (event) => {
-    if (event.target.files[0]) {
-      setImage(event.target.files[0]);
-    }
-  };
-
-  console.log("--frksjnv==", username);
-
-  const savePost = async () => {
+  const saveOrUpdatePost = async (event) => {
+    event.preventDefault();
+    const data = {
+      PostMessage: userMessage,
+      Username: username,
+    };
     try {
-      // const imagesListRef = ref(storage, "images/");
-      const imageRef = ref(storage, `images/${image.name + v4()}`);
-      await uploadBytes(imageRef, image);
-
-      const imageUrl = await getDownloadURL(imageRef);
-      // await imageRef.put(image);
-      // const imageUrl = await imageRef.getDownloadURL();
-      const data = {
-        PostMessage: userMessage,
-        Username: username,
-        ImageUrl: imageUrl,
-      };
-      const response = await axios.post(
-        "http://localhost:3001/post/savepost",
-        data
-      );
-      if (response.status === 200) {
-        console.log("Post saved successfully!");
+      if (viewMode || editMode) {
+        await axios.put(`${baseUrl}/post/update/${userPost._id}`, data, { withCredentials: true });
+        console.log("Post updated successfully!");
       } else {
-        console.error("Failed to save post:", response.data.message);
+        await axios.post(`${baseUrl}/post/savepost`, data, { withCredentials: true });
+        console.log("Post saved successfully!");
       }
-      console.log("response---", response);
-    } catch (err) {
-      console.log("Error while posting new post:", err);
+      closeModal();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error saving or updating post:", error);
     }
   };
 
   return (
-    <div>
-      <div className="modal-wrapper" onClick={closeModal}></div>
-      <div className="modal-container">
-        <form>
-          <h1>Create a New Post</h1>
-          <label>Post Message:</label>
-          <input
-            id="postMessage"
-            type="text"
-            value={userMessage}
-            onChange={handlePostClick}
-          ></input>
-          <label>Choose Image:</label>
-          <input
-            type="file"
-            accept="image/*"
-            name="image"
-            onChange={handleFileChange}
-          ></input>
-          <br />
-          <button className="post-btn" onClick={savePost}>
-            Post
-          </button>
-          <button className="close-btn" onClick={closeModal}>
-            Close
-          </button>
+    <div className="modal-overlay">
+      <div className="modal-container" ref={modalRef}>
+        <form onSubmit={saveOrUpdatePost}>
+          <h1 className="posted-by">
+            {editMode ? "Edit Post" : "Create a New Post"}
+          </h1>
+          <div className="post-message">
+            <label>Post Message:</label>
+            <br />
+            <textarea
+              id="postMessage"
+              type="text"
+              value={userMessage}
+              className="large-input"
+              onChange={handlePostMessageChange}
+              readOnly={viewMode && !isCurrentUser}
+            />
+            {!viewMode || isCurrentUser ? (
+              <button className="post-btn" type="submit">
+                {editMode ? "Update" : "Post"}
+              </button>
+            ) : null}
+          </div>
         </form>
       </div>
     </div>

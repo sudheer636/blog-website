@@ -1,144 +1,201 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Modal from "react-modal";
-import { useSelector, useDispatch } from "react-redux";
+import { formatDistanceToNow } from "date-fns";
 import PostModal from "./PostModal";
-import { setUserName } from "../redux/action";
-import "./HomePage.css";
+import { history } from "../App";
+import "./MyPosts.css";
 
-function MyPosts(props) {
+function MyPosts() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [post, setPost] = useState([]);
-  const [newPost, setNewPost] = useState("");
-  const [postDialog, setPostDialog] = useState(false);
-  const [postId, setPostId] = useState("");
-  // const [username, setUserName] = useState("");
+  const [postData, setPostData] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("No filter");
+  const [selectedCategoryTime, setSelectedCategoryTime] = useState(null);
+  const baseUrl = process.env.REACT_APP_HostUrl;
 
-  const username = useSelector((state) => state.username);
-  const dispatch = useDispatch();
+  const token = getCookie("token");
+  const categories = [
+    "No filter",
+    "Past 10min",
+    "Past 30min",
+    "Past 1 hour",
+    "Past 2 hours",
+    "Past 6 hours",
+    "Past 1 day",
+    "Past 1 week",
+    "Past 1 month",
+    "Past 1 year",
+  ];
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+
+  let username = localStorage.getItem("Username");
+  username = username === "null" ? null : username;
+
   useEffect(() => {
     fetchData();
-    const storedUserName = localStorage.getItem("Username");
-    if (storedUserName) {
-      dispatch(setUserName(storedUserName));
-    }
-  }, [dispatch]);
-  useEffect(() => {
-    localStorage.setItem("Username", username);
   }, [username]);
 
-
-  const fetchData = async () => {
+  const fetchData = async (retry = 2) => {
     try {
-      const response = await axios.get(`http://localhost:3001/post/myposts/${username}`);
-      setPost(response.data);
+      const response = await axios.get(`${baseUrl}/post/myposts`, {
+        withCredentials: true,
+      });
+      setPostData(response.data);
     } catch (err) {
-      console.log("err- while fetching data from db", err);
+      if (err.response && err.response.status > 400 && retry > 0) {
+        console.log("-----err.response----", err.response);
+        await refreshToken();
+        fetchData(retry - 1);
+      } else {
+        history.push("/timeout");
+      }
+    }
+  };
+
+  const refreshToken = async () => {
+    try {
+      const response = await axios.post(
+        `${baseUrl}/auth/refresh-token`,
+        {
+          token,
+        }
+      );
+      const { newToken } = response.data;
+      document.cookie = `token=${newToken}; path=/;`;
+    } catch (err) {
+      console.error("Error refreshing token:", err);
+    }
+  };
+
+  const getTimePeriod = (category) => {
+    const now = new Date();
+    switch (category) {
+      case "Past 10min":
+        return new Date(now.getTime() - 10 * 60 * 1000).toISOString();
+      case "Past 30min":
+        return new Date(now.getTime() - 30 * 60 * 1000).toISOString();
+      case "Past 1 hour":
+        return new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+      case "Past 2 hours":
+        return new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+      case "Past 6 hours":
+        return new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
+      case "Past 1 day":
+        return new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+      case "Past 1 week":
+        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      case "Past 1 month":
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      case "Past 1 year":
+        return new Date(
+          now.getTime() - 365 * 24 * 60 * 60 * 1000
+        ).toISOString();
+      default:
+        return null;
     }
   };
 
   const searchPosts = async () => {
     try {
       const searchInput = document.getElementById("searchInput").value;
-      if (searchInput.length > 0) {
-        const response = await axios.get(
-          `http://localhost:3001/post/search/${searchInput}`
+      if (searchInput.length > 0 || selectedCategoryTime) {
+        const response = await axios.post(
+          `${baseUrl}/post/search`,
+          { timePeriod: selectedCategoryTime, searchInput, homepage: false },
+          { withCredentials: true }
         );
-        if (response.data.length > 0) {
-          setPost(response.data);
-        } else {
-          fetchData();
-        }
+        setPostData(response.data.length > 0 ? response.data : []);
       } else {
         fetchData();
       }
     } catch (err) {
-      console.log("err- while searching data from db", err);
-    }
-  };
-  const onClickDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3001/post/delete/${id}`);
-      fetchData();
-    } catch (err) {
-      console.log("err- while deleting data from db", err);
+      console.error("Error searching data from db", err);
     }
   };
 
-  const onClickEdit = async (id) => {
+  const handleDelete = async (id) => {
     try {
-      await axios.put(`http://localhost:3001/post/update/${id}`, {
-        PostMessage: newPost,
+      await axios.delete(`${baseUrl}/post/delete/${id}`, {
+        withCredentials: true,
       });
-      setPostDialog(false);
       fetchData();
     } catch (err) {
-      console.log("err- while updation data from db", err);
+      console.log("Error deleting data from db", err);
     }
   };
 
-  const onCloseDialog = async () => {
-    setPostDialog(false);
-  };
-
-  const editMessage = async (event) => {
-    setNewPost(event.target.value);
-  };
-
-  const isModalOpen = async () => {
+  const handleEditPost = (item, event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedPost(item);
     setModalOpen(true);
   };
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-  const editPost = (item) => {
-    setNewPost(item.PostMessage);
-    setPostDialog(true);
-    setPostId(item._id);
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    setSelectedCategoryTime(getTimePeriod(event.target.value));
   };
 
   return (
-    <div className="App">
-      <div>
-      <input
-          input="text"
-          placeholder="Search"
-          id="searchInput"
-        ></input>
-        <button onClick={() => searchPosts()}>Search</button>
-        <form>
-          <label>Add post: </label>
-        </form>
-        <button onClick={isModalOpen}>Add Post</button>
-        {modalOpen && <PostModal closeModal={closeModal} username={username} />}
+    <div className="mypage-container">
+      <div className="search-input">
+        <input type="text" placeholder="Search" id="searchInput" />
+        <select
+          className="filter-dropdown"
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+        >
+          {categories.map((category, index) => (
+            <option key={index} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+        <button onClick={searchPosts}>Search</button>
       </div>
+      <div className="add-post-container">
+        <label type="text" placeholder="Add post" id="postInput" />
+        <button onClick={() => setModalOpen(true)}>Add Post</button>
+      </div>
+      {modalOpen && (
+        <PostModal
+          closeModal={() => setModalOpen(false)}
+          username={username}
+          editMode={Boolean(selectedPost)}
+          postDetails={selectedPost}
+        />
+      )}
       <div className="post-div">
-        {post.map((item, index) => (
-          <div key={index}>
-            <div className="individual-post-div">
+        {postData.length > 0 ? (
+          postData.map((item, index) => (
+            <div key={index} className="individual-post-div">
               <div className="msg-div">{item.PostMessage}</div>
-              <button
-                onClick={() => {
-                  editPost(item);
-                }}
-              >
-                Edit Post
-              </button>
-              <Modal isOpen={postDialog} onRequestClose={onCloseDialog}>
-                <p>Hello this is model</p>
-                <input value={newPost} onChange={editMessage}></input>
-                <button onClick={() => onClickEdit(postId)}>Save</button>
-                <button onClick={() => onCloseDialog()}> close </button>
-              </Modal>
-              <button
-                onClick={() => onClickDelete(item._id)}
-                className="post-del-btn"
-              >
-                Delete
-              </button>
+              <div className="post-actions">
+                <button onClick={(e) => handleEditPost(item, e)}>Edit Post</button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="post-del-btn"
+                >
+                  Delete
+                </button>
+                <span className="created-date">
+                  {" "}
+                  Posted{" "}
+                  {formatDistanceToNow(new Date(item.CreatedDateTime), {
+                    addSuffix: true,
+                  })}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="no-posts">No Posts available</div>
+        )}
       </div>
     </div>
   );

@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-// import { useNavigate } from 'react-router-dom';
 import { history } from "../App";
+import "./RegisterPage.css";
 
 function RegisterPage(props) {
   const [inputUsername, setuserInputUsername] = useState("");
   const [inputPassword, setuserInputPassword] = useState("");
   const [inputEmail, setuserInputEmail] = useState("");
-  // const navigate = useNavigate();
+  const baseUrl = process.env.REACT_APP_HostUrl;
+
+
+  useEffect(() => {
+    localStorage.setItem("token", null);
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+  }, []);
 
   const handleClickUsername = async (event) => {
     setuserInputUsername(event.target.value);
@@ -19,20 +25,26 @@ function RegisterPage(props) {
     setuserInputEmail(event.target.value);
   };
 
-  const handleclick = async () => {
-    console.log("username-----", inputUsername, inputPassword, inputEmail);
+  const redirectToLoginPage = () => {
+    history.push("/auth/login");
+  };
+
+  const handleclick = async (event) => {
+    event.preventDefault();
+  
     try {
       const data = {
         Username: inputUsername,
-        Password: inputPassword,
+        UserPassword: inputPassword,
         Email: inputEmail,
       };
-      console.log("data-----", data);
-      const response = await axios.post("http://localhost:3001/register", data);
-      console.log("resp---------", response);
+      const response = await axios.post(
+        `${baseUrl}/auth/register`,
+        data
+      );
       if (response.status === 200) {
-        console.log("registered succesfully");
-        history.push('/login');
+        alert("Registration successful!");
+        history.push("/auth/login");
       } else {
         console.log("user id and password doesn't exists");
       }
@@ -41,9 +53,9 @@ function RegisterPage(props) {
     }
   };
   return (
-    <div className="App">
+    <div className="register-container">
       <h1> Sign Up </h1>
-      <form>
+      <form onSubmit={handleclick}>
         <label>Username:</label>
         <input
           id="userinput"
@@ -74,14 +86,15 @@ function RegisterPage(props) {
         ></input>
         <br></br>
         <br></br>
-        <button type="submit" onClick={handleclick}>
+        <button type="submit">
           Register
         </button>
       </form>
 
       <br></br>
-      {/* <button onClick={() => props.onSwitch("login")}> */}
-      <button>Already having account.? Login</button>
+      <button onClick={redirectToLoginPage}>
+        Already having account.? Login
+      </button>
     </div>
   );
 }
