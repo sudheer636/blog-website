@@ -200,5 +200,4 @@ function MyPosts() {
     </div>
   );
 }
-
 export default MyPosts;
