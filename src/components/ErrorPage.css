@@ -1,0 +1,23 @@
+.errorpage-container {
+  max-width: 800px;
+  margin: 150px auto 0; 
+  padding: 40px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.errorpage-button {
+  padding: 10px 20px;
+  margin-top: 20px; 
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.errorpage-button:hover {
+  background-color: #555;
+}
