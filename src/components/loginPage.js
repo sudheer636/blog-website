@@ -42,7 +42,7 @@ function LoginPage() {
         dispatch(setToken(token));
         localStorage.setItem("Username", username);
         localStorage.setItem("token", token);
-        document.cookie = `token=${token}; path=/; Secure;`;
+        document.cookie = `token=${token}; path=/; Secure; SameSite=None; Domain=.onrender.com`;
         history.push("/home");
       } else {
         alert("Invalid credentials");
