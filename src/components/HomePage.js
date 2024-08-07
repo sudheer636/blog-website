@@ -67,7 +67,7 @@ function HomePage() {
         }
       );
       const { newToken } = response.data;
-      document.cookie = `token=${newToken}; path=/;`;
+      document.cookie = `token=${newToken}; path=/; Secure; SameSite=None;`;
     } catch (err) {
       console.error('Error refreshing token:', err);
     }
